@@ -1,1 +1,323 @@
-Hello
+﻿<html>
+
+<head>
+    <title>TowerForge - The Ultimate TowerFall Sprite Data Tool</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="TowerForge is the easiest way to save and modify the TowerFall spritesheets." />
+
+    <link rel="icon" type="img/png" href="favicon.ico" />
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/select2/3.5.0/select2.css" />
+    <link href="http://cdnjs.cloudflare.com/ajax/libs/select2/3.5.0/select2-spinner.gif" />
+    <link rel="stylesheet" href="/css/bootstrap-colorpicker.min.css" />
+    <link rel="stylesheet" href="/css/site.css" />
+</head>
+
+<body>
+    <div class="navbar navbar-static-top" id="top">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <a href="../" class="navbar-brand">
+                        <img src="/img/logo.png" class="img-responsive" />
+                    </a>
+                </div>
+                <div class="col-md-6 text-right">
+                    <select>
+                        <option></option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12 text-center">
+                <a id="uploadLink" href="javascript:upload()">
+                    <img src="/img/upload.png" />
+                </a>
+                <img src="/img/spritesheet.png" />
+                <i id="help" class="fa fa-question-circle" style="color:white"></i> 
+            </div>
+            <input type="file" id="pic" accept="image/*" multiple class="hide" />
+        </div>
+        <br/>
+        <div id="spriteDataContainer" class="row text-center">
+            <canvas id="spriteCanvas"></canvas>
+            <div id="spriteData"></div>
+            <br/>
+            <div id="modifyContainer">
+                <a id="modifyLink" href="javascript:modify()">
+                    <img src="/img/modify.png" />
+                </a>
+                <img src="/img/spritesheet.png" />
+            </div>
+            <br/>
+            <div style="color:white">Note: File name must match original sprite name.
+                <br/>Replace / with - (i.e. arrows/laserArrows.png to arrows-laserArrows.png)</div>
+            <input type="file" id="modifiedPic" accept="image/*" class="hide" multiple />
+            <canvas id="modifiedCanvas" class="hide"></canvas>
+        </div>
+        <br/>
+        <div class="twitterContainer row">
+            <div class="text-center">
+                <a class="twitter-timeline" href="https://twitter.com/hashtag/TowerFallSprites" data-widget-id="489825150720700416">#TowerFallSprites Tweets</a>
+                <script>
+                    ! function (d, s, id) {
+                        var js, fjs = d.getElementsByTagName(s)[0],
+                            p = /^http:/.test(d.location) ? 'http' : 'https';
+                        if (!d.getElementById(id)) {
+                            js = d.createElement(s);
+                            js.id = id;
+                            js.src = p + "://platform.twitter.com/widgets.js";
+                            fjs.parentNode.insertBefore(js, fjs);
+                        }
+                    }(document, "script", "twitter-wjs");
+                </script>
+            </div>
+        </div>
+        <br/>
+        <div class="row text-center">
+            <div class="col-sm-offset-1 col-sm-3">
+                <a href="http://piskelapp.com">
+                    <img src="http://www.piskelapp.com/static/resources/logo_transparent.png" />
+                </a>
+            </div>
+            <div class="col-sm-4">
+                <img src="/img/buy.png" />
+                <a href="http://store.steampowered.com/app/251470">
+                    <img src="/img/game.png" />
+                </a>
+            </div>
+            <div class="col-sm-3">
+                <a href="http://www.reddit.com/r/towerfall">
+                    <img src="/img/reddit.png" />
+                </a>
+            </div>
+        </div>
+        <br/>
+    </div>
+
+    <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/select2/3.5.0/select2.js"></script>
+    <script src="/js/bootstrap-colorpicker.min.js"></script>
+    <script>
+        var list = [],
+            xmlData = {},
+            xmls = ['atlas', 'bgAtlas', 'menuAtlas', 'bossAtlas'],
+            coords = {};
+        var canvas = $('#spriteCanvas')[0];
+        var context = canvas.getContext('2d');
+        var modifiedCanvas = $('#modifiedCanvas')[0];
+        var modifiedContext = modifiedCanvas.getContext('2d');
+        $(document).ready(function () {
+            $('#help').popover({
+                trigger: 'click',
+                animation: false,
+                content: '/Steam/steamapps/common/TowerFall/Content/Atlas',
+                container: 'body',
+                placement: 'bottom'
+            });
+            $('#uploadLink').popover({
+                container: "body",
+                toggle: "manual",
+                placement: "bottom"
+            });
+            $('#modifyLink').popover({
+                container: "body",
+                toggle: "manual",
+                placement: "top"
+            });
+            $('select').select2({
+                placeholder: 'Choose Sprite...'
+            });
+            $('#pic').on('change', handleFileSelect);
+            $('#spriteDataContainer').on('change', '#modifiedPic', handleModifiedFileSelect);
+            $('select').on('change', function () {
+                var spritesheet = $('option:selected').data('spritesheet');
+                if (spritesheet != null)
+                    if ($('[data-spritesheet=' + spritesheet + ']')[0] == null) {
+                        var popover = $('#uploadLink').data('bs.popover');
+                        popover.options.content = displayError();
+                        $('#uploadLink').popover('show');
+                    } else {
+                        $('#uploadLink').popover('hide');
+
+                        var subTexture = $(xmlData[spritesheet]).find('[name="' + $(this).val() + '"]');
+                        $('#spriteCanvas').attr('width', $(subTexture).attr('width')).attr('height', $(subTexture).attr('height'))
+                        coords = {
+                            x: $(subTexture).attr('x'),
+                            y: $(subTexture).attr('y'),
+                            w: $(subTexture).attr('width'),
+                            h: $(subTexture).attr('height')
+                        };
+                        context.drawImage($('[data-spritesheet=' + spritesheet + ']')[0], coords.x, coords.y, coords.w, coords.h, 0, 0, coords.w, coords.h);
+                    }
+            });
+            $('#spriteCanvas').colorpicker({
+                format: 'rgba'
+            }).on('changeColor', function (e) {
+                $('#spriteCanvas').css('backgroundColor', e.color.toHex());
+            });
+            var xhr = [];
+            $.each(xmls, function (i) {
+                xhr.push(loadXmls(xmls[i]));
+            });
+            $.when.apply(null, xhr).done(function (e) {
+                $.each(list, function (i) {
+                    var option = $('<option>', {
+                        value: list[i].name,
+                        text: list[i].name
+                    });
+                    option.data('spritesheet', list[i].xml);
+                    $('select').append(option);
+                });
+            });
+        });
+
+        function upload() {
+            $('#pic').click();
+        }
+
+        function modify() {
+            $("#modifiedPic").replaceWith($("#modifiedPic").clone())
+            $('#modifiedPic').click();
+        }
+
+        function handleFileSelect(evt) {
+            var files = evt.target.files; // FileList object
+            var spritesheet = '';
+            $('#spriteData').empty();
+            $.each(files, function (i) {
+                spritesheet = files[i].name.split('.')[0];
+                var currentSpritesheet = spritesheet;
+                var reader = new FileReader();
+                // Closure to capture the file information.
+                reader.onload = function (e) {
+                    $('#spriteData').append($('<img>', {
+                        src: e.target.result,
+                        style: 'display:none',
+                        'data-spritesheet': currentSpritesheet
+                    }));
+                };
+                reader.onloadend = function (e) {
+                    if (e.target.readyState == FileReader.DONE) {
+                        $('select').change();
+                    }
+                };
+                // Read in the image file as a data URL.
+
+                reader.readAsDataURL(files[i]);
+            });
+        }
+
+        var modifySheets = {};
+        var spritesNotFound = [];
+
+        function handleModifiedFileSelect(evt) {
+            $('#modifyLink').popover('hide')
+            var files = evt.target.files; // FileList object   
+            var count = 1;
+            modifySheets = {};
+            spritesNotFound = [];
+            $.each(files, function (i) {
+                var sprite = files[i].name.split('.')[0];
+                sprite = sprite.replace('-', '/');
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    var subTexture = null;
+                    var currentSpritesheet = '';
+                    $.each(xmls, function (i) {
+                        subTexture = $(xmlData[xmls[i]]).find('[name="' + sprite + '"]');
+
+                        if (subTexture.length != 0) {
+                            currentSpritesheet = xmls[i];
+                            if (modifySheets[xmls[i]] == null)
+                                modifySheets[xmls[i]] = [];
+                            return false;
+                        }
+                    });
+                    if (subTexture.length == 0)
+                        spritesNotFound.push(sprite);
+                    else {
+                        var obj = {};
+                        obj.coords = {
+                            x: $(subTexture).attr('x'),
+                            y: $(subTexture).attr('y'),
+                            w: $(subTexture).attr('width'),
+                            h: $(subTexture).attr('height')
+                        };
+                        obj.image = new Image();
+                        obj.image.src = e.target.result;
+                        modifySheets[currentSpritesheet].push(obj);
+                    }
+                };
+                reader.onloadend = function (e) {
+                    if (e.target.readyState == FileReader.DONE) {
+                        createModifiedFiles(i + 1, files.length);
+                        count++;
+                    }
+                }
+                reader.readAsDataURL(files[i]);
+            });
+
+
+        }
+
+        function loadXmls(xml) {
+            return $.ajax({
+                url: '/xml/' + xml + '.xml',
+                success: function (data) {
+                    xmlData[xml] = data;
+                    $(xmlData[xml]).find('SubTexture').each(function () {
+                        list.push({
+                            name: $(this).attr('name'),
+                            xml: xml
+                        });
+                    });
+                }
+            });
+        }
+
+        function displayError() {
+            return errorMessage = 'Upload ' + $('select option:selected').data('spritesheet') + '.png to view this sprite.';
+        }
+
+        function createModifiedFiles(count, length) {
+            var popover = $('#modifyLink').data('bs.popover');
+            if (count == length) {
+                if (modifySheets == {}) {
+                    popover.options.content = 'Sprites not found. File name must match original sprite name.';
+                    $('#modifyLink').popover('show')
+                } else {
+                    if (spritesNotFound.length > 0) {
+                        popover.options.content = spritesNotFound.join(',') + ' not found in any sheets. File name must match original sprite name.';
+                        $('#modifyLink').popover('show')
+                    }
+                    $.each(modifySheets, function (spritesheet, images) {
+                        var spritesheetCoords = {
+                            w: $('[data-spritesheet=' + spritesheet + ']').width(),
+                            h: $('[data-spritesheet=' + spritesheet + ']').height()
+                        };
+                        $('#modifiedCanvas').prop('width', spritesheetCoords.w).prop('height', spritesheetCoords.h);
+
+                        modifiedContext.drawImage($('[data-spritesheet=' + spritesheet + ']')[0], 0, 0);
+                        $.each(images, function (i) {
+                            modifiedContext.clearRect(images[i].coords.x, images[i].coords.y, images[i].coords.w, images[i].coords.h);
+                            modifiedContext.drawImage(images[i].image, images[i].coords.x, images[i].coords.y);
+                        });
+                        var a = $("<a>").attr("href", modifiedCanvas.toDataURL()).attr("download", spritesheet + ".png").appendTo("body");
+                        a[0].click();
+                        a.remove();
+                    });
+                };
+            }
+        }
+    </script>
+</body>
+
+</html>
