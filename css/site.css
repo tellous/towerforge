@@ -7,8 +7,27 @@ html body {
     text-align: center;
     display: inline-block;
 }
+#logoContainer{
+    padding: 5px;
+}
 #top {
     background-color: red;
+}
+#selectContainer{
+    height:74px;
+}
+#selectContainer button{
+    vertical-align:bottom;
+}
+#main{
+    padding-top:15px;
+}
+#sideContent{
+    color:white;
+    display:inline-block;
+}
+#mainContainer{
+    padding-top:20px;
 }
 .popover-content,
 .popover-content .body {
