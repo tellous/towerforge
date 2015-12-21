@@ -26,6 +26,12 @@ html body {
     color:white;
     display:inline-block;
 }
+
+#sideContent > div{
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
 #mainContainer{
     padding-top:20px;
 }
