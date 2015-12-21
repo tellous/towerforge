@@ -340,7 +340,7 @@
 
         function loadXmls(xml) {
             return $.ajax({
-                url: '/xml/' + xml + '.xml',
+                url: 'xml/' + xml + '.xml',
                 success: function (data) {
                     xmlData[xml] = data;
                     $(xmlData[xml]).find('SubTexture').each(function () {
