@@ -136,7 +136,13 @@
     <script>
         var list = [];
         var xmlData = {};
-        var xmls = ['atlas', 'bossAtlas', 'editorAtlas'];
+        var xmls = ['atlas', 
+        'bossAtlas',  
+        'menuAtlas', 
+        'bgAtlas', 
+        'Dark World atlas',
+        'Dark World bossAtlas',
+        'Dark World editorAtlas'];
         var coords = {};
         var canvas = $('#spriteCanvas')[0];
         var context = canvas.getContext('2d');
@@ -150,7 +156,7 @@
             $('#uploadHelp').popover({
                 trigger: 'click',
                 animation: false,
-                content: '/Steam/steamapps/common/TowerFall/DarkWorldContent/Atlas',
+                content: '/Steam/steamapps/common/TowerFall/Content/Atlas or /Steam/steamapps/common/TowerFall/DarkWorldContent/Atlas',
                 container: 'body',
                 placement: 'bottom'
             });
