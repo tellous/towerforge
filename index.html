@@ -211,7 +211,7 @@
             });
             $.when.apply(null, xhr).done(function (e) {                
                 $.each(list, function (i) {                    
-                    var optGroup = $('#spriteSelect optgroup[label=' + list[i].xml + ']');
+                    var optGroup = $('#spriteSelect optgroup[label="' + list[i].xml + '"]');
                     if (optGroup.length == 0) {
                         $('#spriteSelect').append($('<optgroup>').attr('label', list[i].xml));
                     }
@@ -345,6 +345,7 @@
         }
 
         function loadXmls(xml) {
+            console.log(xml);
             return $.ajax({
                 url: 'xml/' + xml + '.xml',
                 success: function (data) {
